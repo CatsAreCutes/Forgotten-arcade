@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>The Forgotten Arcade</title>
+
+<style>
+:root {
+    --bg: #10110e;
+    --panel: #191b16;
+    --green: #9da77c;
+    --dim: #62664f;
+    --dust: #aaa58a;
+    --red: #8b4d42;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--green);
+    background:
+        radial-gradient(ellipse at center, #25271d 0%, #12130f 65%, #090a08 100%);
+    font-family: "Courier New", monospace;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+    opacity: 0.12;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.4) 4px
+    );
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 19;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 30%,
+        rgba(0,0,0,0.72) 100%
+    );
+}
+
+button {
+    font-family: inherit;
+}
+
+a {
+    color: inherit;
+}
+
+#dustCanvas {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+}
+
+.page {
+    position: relative;
+    z-index: 2;
+    width: min(1050px, 92%);
+    margin: auto;
+    padding-bottom: 70px;
+}
+
+/* HEADER */
+
+header {
+    padding: 36px 0 18px;
+    border-bottom: 1px solid #414333;
+    position: relative;
+}
+
+.topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: #666a55;
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.logo {
+    font-size: clamp(30px, 6vw, 56px);
+    letter-spacing: 5px;
+    font-weight: bold;
+    color: #a4a889;
+    text-shadow: 0 0 10px rgba(157,167,124,0.15);
+    margin: 25px 0 8px;
+}
+
+.subtitle {
+    color: #72765d;
+    letter-spacing: 2px;
+    font-size: 12px;
+}
+
+.status {
+    display: inline-block;
+    border: 1px solid #51533e;
+    padding: 8px 11px;
+    margin-top: 20px;
+    font-size: 11px;
+    color: #a5a17b;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: #8c985d;
+    border-radius: 50%;
+    margin-right: 7px;
+    box-shadow: 0 0 8px #8c985d;
+    animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+    50% { opacity: 0.25; }
+}
+
+/* COBWEBS */
+
+.web {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    pointer-events: none;
+    opacity: 0.25;
+}
+
+.web svg {
+    width: 100%;
+    height: 100%;
+}
+
+.web path {
+    fill: none;
+    stroke: #999681;
+    stroke-width: 0.8;
+}
+
+.web-top-right {
+    right: -5px;
+    top: 0;
+}
+
+.web-bottom-left {
+    left: -10px;
+    bottom: -25px;
+    transform: rotate(180deg);
+}
+
+/* CONTENT */
+
+.intro {
+    margin: 30px 0;
+    padding: 20px;
+    border-left: 2px solid #555941;
+    background: rgba(25,27,22,0.65);
+}
+
+.intro h2 {
+    margin-top: 0;
+    font-size: 15px;
+    letter-spacing: 2px;
+    font-weight: normal;
+}
+
+.intro p {
+    color: #898a72;
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+.warning {
+    color: #8c6658;
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-top: 18px;
+}
+
+/* ARCADE MACHINES */
+
+.section-title {
+    font-size: 13px;
+    font-weight: normal;
+    letter-spacing: 3px;
+    border-bottom: 1px solid #393b2e;
+    padding-bottom: 12px;
+    margin-top: 38px;
+}
+
+.machines {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+.machine {
+    min-height: 205px;
+    position: relative;
+    padding: 20px;
+    text-align: left;
+    color: var(--green);
+    background: linear-gradient(145deg, #20221a, #13140f);
+    border: 1px solid #414332;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    overflow: hidden;
+}
+
+.machine:hover,
+.machine:focus-visible {
+    outline: none;
+    border-color: #8c916c;
+    background: #25271c;
+}
+
+.machine::after {
+    content: "";
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    right: -45px;
+    bottom: -60px;
+    border: 1px solid rgba(151,154,113,0.12);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 15px rgba(151,154,113,0.025),
+        0 0 0 30px rgba(151,154,113,0.02);
+}
+
+.machine-number {
+    color: #64674f;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+.machine-icon {
+    font-size: 32px;
+    margin: 15px 0;
+    filter: grayscale(0.7);
+    opacity: 0.75;
+}
+
+.machine h3 {
+    font-size: 15px;
+    font-weight: normal;
+    margin: 0 0 10px;
+    letter-spacing: 1px;
+}
+
+.machine p {
+    color: #777963;
+    font-size: 11px;
+    line-height: 1.7;
+    margin-bottom: 18px;
+}
+
+.machine-status {
+    font-size: 9px;
+    color: #72765b;
+    letter-spacing: 1px;
+}
+
+.machine.offline {
+    opacity: 0.55;
+}
+
+.machine.offline .machine-status {
+    color: #96685b;
+}
+
+.machine.unknown {
+    border-color: #51443b;
+}
+
+/* LOG */
+
+.log {
+    border: 1px solid #393b2e;
+    background: rgba(10,11,9,0.7);
+    padding: 18px;
+    margin-top: 35px;
+}
+
+.log h2 {
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: normal;
+    margin-top: 0;
+}
+
+#systemLog {
+    min-height: 95px;
+    color: #777b61;
+    font-size: 11px;
+    line-height: 2;
+    white-space: pre-line;
+}
+
+.log-line {
+    animation: appear 0.5s ease;
+}
+
+@keyframes appear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* FOOTER */
+
+footer {
+    margin-top: 45px;
+    border-top: 1px solid #393b2e;
+    padding-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    color: #535744;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+/* MACHINE WINDOW */
+
+#machineWindow {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(0,0,0,0.88);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.window-box {
+    width: min(520px, 100%);
+    padding: 28px;
+    border: 1px solid #62664a;
+    background: #15160f;
+    box-shadow: 0 0 45px #000;
+}
+
+.window-box h2 {
+    font-size: 20px;
+    font-weight: normal;
+    letter-spacing: 2px;
+}
+
+.window-box p {
+    color: #96957a;
+    line-height: 1.9;
+    font-size: 13px;
+}
+
+.window-box pre {
+    color: #83866a;
+    white-space: pre-wrap;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.window-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 25px;
+}
+
+.window-buttons button {
+    padding: 12px 15px;
+    color: #b4b798;
+    background: #24261b;
+    border: 1px solid #595d42;
+    cursor: pointer;
+}
+
+.window-buttons button:hover {
+    background: #343725;
+}
+
+#arcadeBtn {
+    display: none;
+    color: #d0d0a5;
+    border-color: #88875a;
+}
+
+/* EERIE WIND EVENT */
+
+#windOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    background: rgba(8,9,7,0);
+}
+
+#windOverlay.active {
+    animation: windScreen 5s ease-in-out forwards;
+}
+
+.wind-message {
+    text-align: center;
+    color: #d0cbb0;
+    text-shadow: 0 0 15px #b0a78a;
+    letter-spacing: 5px;
+    font-size: clamp(18px, 4vw, 32px);
+    opacity: 0;
+}
+
+#windOverlay.active .wind-message {
+    animation: windText 5s ease-in-out forwards;
+}
+
+.wind-subtitle {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-top: 18px;
+    color: #a39b7d;
+}
+
+@keyframes windScreen {
+    0%, 100% { opacity: 0; background: rgba(8,9,7,0); }
+    15% { opacity: 1; background: rgba(8,9,7,0.2); }
+    45% { opacity: 1; background: rgba(8,9,7,0.52); }
+    80% { opacity: 0.7; background: rgba(8,9,7,0.3); }
+}
+
+@keyframes windText {
+    0%, 10%, 100% { opacity: 0; transform: translateX(0); }
+    20% { opacity: 1; transform: translateX(-3px); }
+    25% { transform: translateX(3px); }
+    30% { transform: translateX(0); }
+    60% { opacity: 1; }
+    85% { opacity: 0; }
+}
+
+/* WATCHING EFFECT */
+
+#watching {
+    position: fixed;
+    z-index: 10;
+    right: 7%;
+    bottom: 12%;
+    font-size: 10px;
+    color: #5c6049;
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity 3s;
+    pointer-events: none;
+}
+
+#watching.visible {
+    opacity: 0.6;
+}
+
+body.wind {
+    animation: slightWind 0.3s linear 5;
+}
+
+@keyframes slightWind {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
+}
+
+@media (max-width: 550px) {
+    .logo {
+        letter-spacing: 2px;
+    }
+
+    .topline {
+        font-size: 9px;
+    }
+
+    .machine {
+        min-height: 180px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="dustCanvas"></canvas>
+
+<div id="windOverlay">
+    <div class="wind-message">
+        WIND / DUST WIND
+        <span class="wind-subtitle">AIR MOVEMENT DETECTED</span>
+    </div>
+</div>
+
+<div id="watching">SOMEONE IS HERE</div>
+
+<div class="page">
+
+<header>
+    <div class="web web-top-right">
+        <svg viewBox="0 0 100 100">
+            <path d="M100 0 L0 100 M100 20 L20 100 M100 40 L40 100 M100 60 L60 100 M100 80 L80 100 M80 0 L0 80 M60 0 L0 60 M40 0 L0 40 M20 0 L0 20"/>
+            <path d="M80 0 Q65 15 80 30 Q55 35 60 50 Q35 55 40 70 Q15 75 20 90"/>
+            <path d="M60 0 Q45 15 60 30 Q35 35 40 50 Q15 55 20 70 Q5 75 0 80"/>
+        </svg>
+    </div>
+
+    <div class="topline">
+        <span>ARCHIVE TERMINAL 001</span>
+        <span>LAST MAINTENANCE: UNKNOWN</span>
+    </div>
+
+    <h1 class="logo">THE FORGOTTEN ARCADE</h1>
+
+    <div class="subtitle">
+        A PLACE THAT SHOULD HAVE BEEN CLOSED YEARS AGO.
+    </div>
+
+    <div class="status">
+        <span class="status-dot"></span>
+        SYSTEM ONLINE — SOMEHOW
+    </div>
+</header>
+
+<section class="intro">
+    <h2>WELCOME BACK, PLAYER.</h2>
+
+    <p>
+        We weren't expecting visitors.
+        The arcade closed a long time ago, but the machines never
+        completely shut down.
+    </p>
+
+    <p>
+        Dust has collected on the screens. The lights flicker.
+        Nobody remembers who owns this place.
+    </p>
+
+    <p>
+        If you hear the wind, don't worry about it.
+        The doors have been locked for years.
+    </p>
+
+    <div class="warning">
+        NOTICE: SOME MACHINES MAY DISPLAY UNEXPECTED CONTENT.
+    </div>
+</section>
+
+<h2 class="section-title">AVAILABLE MACHINES / 04 ENTRIES FOUND</h2>
+
+<div class="machines">
+
+    <button class="machine" data-machine="pixel">
+        <div class="machine-number">MACHINE 001</div>
+        <div class="machine-icon">👾</div>
+        <h3>PIXEL RUNNER</h3>
+        <p>A familiar game. You don't remember playing it, though.</p>
+        <div class="machine-status">● ONLINE</div>
+    </button>
+
+    <button class="machine offline" data-machine="moon">
+        <div class="machine-number">MACHINE 002</div>
+        <div class="machine-icon">🌙</div>
+        <h3>MOON JUMP</h3>
+        <p>The display is dark. Something moves behind the glass.</p>
+        <div class="machine-status">● OFFLINE</div>
+    </button>
+
+    <button class="machine unknown" data-machine="frog">
+        <div class="machine-number">MACHINE 003</div>
+        <div class="machine-icon">🐸</div>
+        <h3>FROG QUEST</h3>
+        <p>The name is scratched into the cabinet. No one recalls installing it.</p>
+        <div class="machine-status">● UNKNOWN</div>
+    </button>
+
+    <button class="machine unknown" data-machine="mystery">
+        <div class="machine-number">MACHINE 004</div>
+        <div class="machine-icon">❔</div>
+        <h3>MYSTERY GAME</h3>
+        <p>The screen is already on. There is no machine behind it.</p>
+        <div class="machine-status">● INSERT COIN</div>
+    </button>
+
+</div>
+
+<section class="log">
+    <h2>TERMINAL LOG / RECOVERED FRAGMENTS</h2>
+
+    <div id="systemLog">
+        <div class="log-line">[SYSTEM] Boot sequence completed.</div>
+        <div class="log-line">[SYSTEM] Dust levels exceed recommended limits.</div>
+        <div class="log-line">[SYSTEM] No staff members detected.</div>
+        <div class="log-line">[SYSTEM] Welcome back, player.</div>
+    </div>
+</section>
+
+<footer>
+    <span>THE FORGOTTEN ARCADE</span>
+    <span>VERSION 0.0.4 — RECOVERED BUILD</span>
+    <span>PLEASE DO NOT TURN OFF THE LIGHTS</span>
+</footer>
+
+</div>
+
+<div id="machineWindow">
+    <div class="window-box">
+        <div class="machine-number" id="windowNumber">MACHINE FILE</div>
+        <h2 id="windowTitle">UNKNOWN MACHINE</h2>
+        <p id="windowDescription"></p>
+        <pre id="windowExtra"></pre>
+
+        <div class="window-buttons">
+            <button id="playBtn">ATTEMPT START</button>
+            <button id="arcadeBtn">ENTER THE ARCADE ↗</button>
+            <button id="closeBtn">CLOSE WINDOW</button>
+        </div>
+    </div>
+</div>
+
+<script src="game.js"></script>
+
+</body>
+</html>
